@@ -1,0 +1,46 @@
+
+KERNEL: booting...
+===========================================================
+HellfireOS v2.17.03 (4.6.1) [Nov  9 2017, 02:18:32]
+Embedded Systems Group - GSE, PUCRS - [2007 - 2017]
+===========================================================
+
+arch:          mips/plasma
+sys clk:       25000 kHz
+time slice:    10480 us
+heap size:     500000 bytes
+max tasks:     30
+
+HAL: _vm_init()
+HAL: _sched_init()
+HAL: _timer_init()
+HAL: _irq_init()
+KERNEL: [idle task], id: 0, p:0, c:0, d:0, addr: 10000ffc, sp: 10005790, ss: 1024 bytes
+HAL: _device_init()
+KERNEL: this is core 5
+KERNEL: NoC queue init, 64 packets
+KERNEL: NoC driver registered
+HAL: _task_init()
+KERNEL: [escravo], id: 1, p:0, c:0, d:0, addr: 10002690, sp: 10008ac0, ss: 4096 bytes
+KERNEL: free heap: 485368 bytes
+KERNEL: HellfireOS is up
+I am cpu: 5, index: 0, msg: 1, size: 20
+I am cpu: 5, index: 1, msg: 1, size: 20
+I am cpu: 5, index: 2, msg: 1, size: 20
+I am cpu: 5, index: 3, msg: 1, size: 20
+I am cpu: 5, index: 4, msg: 1, size: 20
+I am cpu: 5, index: 5, msg: 1, size: 20
+I am cpu: 5, index: 6, msg: 1, size: 20
+I am cpu: 5, index: 7, msg: 1, size: 20
+I am cpu: 5, index: 8, msg: 1, size: 20
+I am cpu: 5, index: 9, msg: 1, size: 20
+I am cpu: 5, index: 10, msg: 1, size: 20
+I am cpu: 5, index: 11, msg: 1, size: 20
+I am cpu: 5, index: 12, msg: 1, size: 20
+I am cpu: 5, index: 13, msg: 1, size: 20
+I am cpu: 5, index: 14, msg: 1, size: 20
+I am cpu: 5, index: 15, msg: 1, size: 20
+I am cpu: 5, index: 16, msg: 1, size: 20
+I am cpu: 5, index: 17, msg: 1, size: 20
+I am cpu: 5, index: 18, msg: 1, size: 20
+I am cpu: 5, index: 19, msg: 1, size: 20

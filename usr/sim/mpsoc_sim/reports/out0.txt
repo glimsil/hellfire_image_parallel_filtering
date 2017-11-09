@@ -1,0 +1,232 @@
+
+KERNEL: booting...
+===========================================================
+HellfireOS v2.17.03 (4.6.1) [Nov  9 2017, 02:18:27]
+Embedded Systems Group - GSE, PUCRS - [2007 - 2017]
+===========================================================
+
+arch:          mips/plasma
+sys clk:       25000 kHz
+time slice:    10480 us
+heap size:     500000 bytes
+max tasks:     30
+
+HAL: _vm_init()
+HAL: _sched_init()
+HAL: _timer_init()
+HAL: _irq_init()
+KERNEL: [idle task], id: 0, p:0, c:0, d:0, addr: 10000ffc, sp: 10005780, ss: 1024 bytes
+HAL: _device_init()
+KERNEL: this is core 0
+KERNEL: NoC queue init, 64 packets
+KERNEL: NoC driver registered
+HAL: _task_init()
+KERNEL: [mestre], id: 1, p:0, c:0, d:0, addr: 10002468, sp: 10008ab0, ss: 4096 bytes
+KERNEL: free heap: 485368 bytes
+KERNEL: HellfireOS is up
+index =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+index =2
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+index =3
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+index =4
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+index =5
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+buf x =1
+index =6
+index: 0, msg: 1
+index: 1, msg: 1
+index: 2, msg: 1
+index: 3, msg: 1
+index: 4, msg: 1
+index: 5, msg: 1
+index: 6, msg: 1
+index: 7, msg: 1
+index: 8, msg: 1
+index: 9, msg: 1
+index: 10, msg: 1
+index: 11, msg: 1
+index: 12, msg: 1
+index: 13, msg: 1
+index: 14, msg: 1
+index: 15, msg: 1
+index: 16, msg: 1
+index: 17, msg: 1
+index: 18, msg: 1
+index: 19, msg: 1
+index: 20, msg: 1
+index: 21, msg: 1
+index: 22, msg: 1
+index: 23, msg: 1
+index: 24, msg: 1
+index: 25, msg: 1
+index: 26, msg: 1
+index: 27, msg: 1
+index: 28, msg: 1
+index: 29, msg: 1
+index: 30, msg: 1
+index: 31, msg: 1
+index: 32, msg: 1
+index: 33, msg: 1
+index: 34, msg: 1
+index: 35, msg: 1
+index: 36, msg: 1
+index: 37, msg: 1
+index: 38, msg: 1
+index: 39, msg: 1
+index: 40, msg: 1
+index: 41, msg: 1
+index: 42, msg: 1
+index: 43, msg: 1
+index: 44, msg: 1
+index: 45, msg: 1
+index: 46, msg: 1
+index: 47, msg: 1
+index: 48, msg: 1
+index: 49, msg: 1
+index: 50, msg: 1
+index: 51, msg: 1
+index: 52, msg: 1
+index: 53, msg: 1
+index: 54, msg: 1
+index: 55, msg: 1
+index: 56, msg: 1
+index: 57, msg: 1
+index: 58, msg: 1
+index: 59, msg: 1
+index: 60, msg: 1
+index: 61, msg: 1
+index: 62, msg: 1
+index: 63, msg: 1
+index: 64, msg: 1
+index: 65, msg: 1
+index: 66, msg: 1
+index: 67, msg: 1
+index: 68, msg: 1
+index: 69, msg: 1
+index: 70, msg: 1
+index: 71, msg: 1
+index: 72, msg: 1
+index: 73, msg: 1
+index: 74, msg: 1
+index: 75, msg: 1
+index: 76, msg: 1
+index: 77, msg: 1
+index: 78, msg: 1
+index: 79, msg: 1
+index: 80, msg: 1
+index: 81, msg: 1
+index: 82, msg: 1
+index: 83, msg: 1
+index: 84, msg: 1
+index: 85, msg: 1
+index: 86, msg: 1
+index: 87, msg: 1
+index: 88, msg: 1
+index: 89, msg: 1
+index: 90, msg: 1
+index: 91, msg: 1
+index: 92, msg: 1
+index: 93, msg: 1
+index: 94, msg: 1
+index: 95, msg: 1
+index: 96, msg: 1
+index: 97, msg: 1
+index: 98, msg: 1
+index: 99, msg: 1
