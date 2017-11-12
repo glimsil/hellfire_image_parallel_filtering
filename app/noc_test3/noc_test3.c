@@ -3,6 +3,9 @@
 #include "image.h"
 
 int32_t CPU_N = 8;
+int32_t X_CHUNKS = 4;
+int32_t Y_CHUNKS = 2;
+
 
 uint8_t gaussian(uint8_t buffer[5][5]){
 	int32_t sum = 0, mpixel;
@@ -110,49 +113,75 @@ void do_sobel(uint8_t *input, uint8_t *output, int32_t width, int32_t height){
 		}
 	}
 }
+// input, output, height, width, block line, block column, block height, block width
+void sub_matrix(uint8_t *input, uint8_t *output, int32_t h, int32_t w, int32_t k, int32_t l, int32_t bh, int32_t bw) {
+	int32_t i = 0;
+	int32_t _i = 0;
 
-
+	while (i < bh){
+		int32_t j = 0;
+		while (j < bw) {
+			output[_i] = input[(i + k) * w + (j + l)];
+			_i += 1;
+			//print ("%d\t" % a[(i + k) * w + (j + l)]),
+			j += 1;
+		}
+		i += 1;
+	}
+}
 
 void escravo(void) {
 	int32_t i;
 	int16_t val;
-	// int32_t index = 0;
-	int16_t chunks = 4;
+	int32_t index = 0;
+	uint16_t cpu, port, size;
+
+
 
 	if (hf_comm_create(hf_selfid(), 5000, 0))
-	panic(0xff);
+		panic(0xff);
 
-	int32_t offset = (height * width)/(CPU_N * chunks);
-	uint8_t img[offset];
-	int32_t c=0;
+	int32_t OFFSETX_SIZE=width/X_CHUNKS;
+	int32_t OFFSETY_SIZE=height/Y_CHUNKS;
+	int32_t array_size = OFFSETX_SIZE * OFFSETY_SIZE;
+	// uint8_t img[array_size];
+	// uint8_t *img, *img2, *img3;
+	uint8_t *img;
+	img = (uint8_t *) malloc(array_size);
+	// img2= (uint8_t *) malloc(array_size);
+	// img3= (uint8_t *) malloc(array_size);
+	//
+
 	while(1) {
-		int32_t index = 0;
-		uint16_t cpu, port, size;
 
 		i = hf_recvprobe();
 		if (i >= 0) {
-			c++;
 			// recebe a mensagem do mestre
 			val = hf_recvack(&cpu, &port, img, &size, i);
 			if (val)
-			printf("hf_recvack(): error %d\n", val);
+				printf("hf_recvack(): error %d\n", val);
 			else{
+
+
+				// do_gaussian(img, img2, width, height);
+				// do_sobel(img2, img3, width, height);
 
 				// processa os dados recebidos
 				while(index < size){
 					printf("I am cpu: %d, index: %d, msg: %d, size: %d\n", hf_cpuid(), index, img[index], size);
-					img[index] = 1;
+					img[index] = img[index];
 					index++;
 				}
 
-				printf("Img size %d, c=%d\n", size, c);
+				printf("Img size %d\n", size);
 
 				// descobri as 2 da manha que se nao botar isso aqui
 				// ele responde pro mestre antes de o mestre enviar tudo pros escravos
 				// e ai a merda acontece
 				delay_ms(50);
 				// envia os dados alterados pro mestre
-				val = hf_sendack(0, 1000, img, size, i, 3000);
+				// val = hf_sendack(0, 1000, img3, size, 0, 3000);
+				val = hf_sendack(0, 1000, img, size, 0, 3000);
 				free(img);
 			}
 		}
@@ -160,88 +189,136 @@ void escravo(void) {
 }
 
 
+
 void mestre(void) {
 
-	int32_t i, index, i_chunk;
 	//uint32_t time;
-	uint16_t cpu, port, size;
+	uint16_t cpu, port, size, i;
 	int16_t val;
-	int16_t chunks = 4;
-
-	uint8_t *buf;
 
 	if (hf_comm_create(hf_selfid(), 1000, 0)){
 		panic(0xff);
 	}
 
-  // tamanho de cada array pra ser mandando a cada escravo
-  int32_t offset = (height * width)/(CPU_N * chunks);
+	int32_t OFFSETX_SIZE=width/X_CHUNKS;
+	int32_t OFFSETY_SIZE=height/Y_CHUNKS;
 
 	// final image
 	int8_t img[height * width];
+	uint8_t *output = (uint8_t *) malloc(OFFSETX_SIZE * OFFSETY_SIZE);
 
-	printf("OFFSET SIZE %d", offset);
 
 
-  // recebe a resposta
+	// recebe a resposta
 	while (1){
-		for(i_chunk=0; i_chunk<chunks;i_chunk++){
-
-			// comeca no 1 pq 0 eh o mestre
-			for(index=1; index <= CPU_N; index++) {
-				// envia um chunk pra cada escravo
-				//val = hf_sendack(index, 5000, &buf[(index-1) * offset], sizeof(buf)/CPU_N, hf_cpuid(), 500);
-				val = hf_sendack(index, 5000, &image[(i_chunk * offset) + (index-1) * offset], offset, hf_cpuid(), 500);
-
+		// comeca no 1 pq 0 eh o mestre
+		int32_t x, y = 0;
+		int32_t cpu_counter=1;
+		for(x=0; x < X_CHUNKS; x++) {
+			for(y=0; y < Y_CHUNKS; y++) {
+				sub_matrix(image, output, width, height, x*OFFSETX_SIZE, y*OFFSETY_SIZE, OFFSETY_SIZE, OFFSETX_SIZE);
+				val = hf_sendack(cpu_counter, 5000, output, OFFSETX_SIZE * OFFSETY_SIZE, hf_cpuid(), 500);
 				if (val){
 					printf("hf_sendack(): error %d\n", val);
 				}
-			}
 
-			index = 1;
-			buf = (uint8_t *) malloc(offset);
+				cpu_counter++;
+			}
+			//	matrix_print_sub(m, 9, 8, 1, 2, 3, 2)
+			// envia um chunk pra cada escravo
+			//val = hf_sendack(cpu_counter, 5000, &buf[(cpu_counter-1) * offset], sizeof(buf)/CPU_N, hf_cpuid(), 500);
+		}
+
+		cpu_counter = 1;
+		while(1) {
 			// img = (uint8_t *) malloc(height * width)
 
-				// agora recebe
+			// agora recebe
 			i = hf_recvprobe();
 			if (i >= 0) {
 
-				val = hf_recvack(&cpu, &port, buf, &size, 0);
+				val = hf_recvack(&cpu, &port, output, &size, 0);
 				if (val){
 					printf("hf_recvack(): error %d\n", val);
 				} else {
 
-					// Do jeito que ta ignora a order
-					// Aqui vamos ter que controlar quem enviou o que e
-					// por na ordem
-					//
-					printf("cpu %d size of img %d\n", cpu, sizeof(buf));
-					int32_t x = 0;
-					while(x< size){
-						img[x + (offset * i_chunk) + (offset * (index-1))] = buf[x];
-						x++;
+
+					// faz um calculo pra saber onde pelo ID da cpu
+					// poe o resultado
+
+					int32_t offx, a = 0;
+					int32_t offy, b = 0;
+
+					// if(cpu <= X_CHUNKS) {
+					offy = (cpu-1)/X_CHUNKS;
+					offx = (cpu-1) - (offy * X_CHUNKS);
+					// } else {
+					// 	offx = 1;
+					// 	offy = cpu-1 - X_CHUNKS;
+					// }
+					// for(x=1; x < cpu-1; x += X_CHUNKS) {
+					// 	offy ++;
+					// }
+					// offx = cpu - y;
+
+					printf("cpu: %d, OFFSETX: %d, OFFSETY: %d, offsetxsize: %d, offsetysize: %d, sizeof output:%d\n", cpu, offx, offy, OFFSETX_SIZE, OFFSETY_SIZE, size);
+					printf("offx = %d, offy = %d, sum = %d\n", offx * OFFSETX_SIZE, offy * OFFSETY_SIZE, (offx * OFFSETX_SIZE) + (offy * OFFSETY_SIZE));
+
+
+					// monta a matriz de volta
+					int32_t currx = offx * OFFSETX_SIZE;
+					int32_t curry = offy * OFFSETY_SIZE;
+					int32_t output_i = 0;
+					for(x=0; x< OFFSETX_SIZE; x++){
+						for(y=0; y< OFFSETY_SIZE; y++){
+							a = currx + x;
+							b = curry + y;
+							img[(a-1) * OFFSETX_SIZE + b] = output[output_i];
+							output_i++;
+						}
 					}
-					index++;
+					// printf("cpu %d size of img %d\n", cpu, sizeof(output));
+					// int32_t x = 0;
+					// while(x< size){
+					// 	img[x + (offset * (cpu_counter-1))] = output[x];
+					// 	x++;
+					// }
+					cpu_counter++;
+					// printf("cpu_counter = %d\n", cpu_counter);
 				}
 			}
-		}
 
-		printf("CHUNK = %d", i_chunk);
-		//                if(index == CPU_N+1) {
-		//                    // se entrou aqui eh pq recebeu todas as mensages
-		//                    index = 0;
-		//                    // printa o resultado
-		//                    printf("size of img %d", sizeof(img));
-		//                    while(index < sizeof(img)) {
-		//                        printf("index: %d, msg: %d\n", index, img[index]);
-		//                        index++;
-		//                    }
-		//
-		//                    free(buf);
-		//                    free(img);
-		//                    // entra em loop pq nao tem mais nada pra fazer
-		//                    while(1){}
-		//                }
+			if(cpu_counter == CPU_N+1) {
+				// se entrou aqui eh pq recebeu todas as mensages
+				cpu_counter = 0;
+				// printa o resultado
+				// printf("size of img %d", sizeof(img));
+				// while(index < sizeof(img)) {int32_t X_CHUNKS = 2;
+				// 	printf("index: %d, msg: %d\n", index, img[index]);
+				// 	index++;
+				// }
+				int32_t i,j, k = 0;
+				printf("\n\nint32_t width = %d, height = %d;\n", width, height);
+				printf("uint8_t image[] = {\n");
+				for (i = 0; i < height; i++){
+					for (j = 0; j < width; j++){
+						printf("0x%x", img[i * width + j]);
+						if ((i < height-1) || (j < width-1)) printf(", ");
+						if ((++k % 16) == 0) printf("\n");
+					}
+					printf("\n--------------\n ");
+					printf("end of height %d\n ", i);
+					printf("\n--------------\n ");
+
+				}
+				printf("};\n");
+
+				free(output);
+				free(img);
+				// entra em loop pq nao tem mais nada pra fazer
+				while(1){}
+			}
+		}
 	}
 }
 
