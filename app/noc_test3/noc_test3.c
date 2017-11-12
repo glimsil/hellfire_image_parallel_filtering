@@ -145,10 +145,10 @@ void escravo(void) {
 	int32_t OFFSETY_SIZE=height/Y_CHUNKS;
 	int32_t array_size = OFFSETX_SIZE * OFFSETY_SIZE;
 	// uint8_t img[array_size];
-	// uint8_t *img, *img2, *img3;
-	uint8_t *img;
+	uint8_t *img, *img2, *img3;
+	// uint8_t *img;
 	img = (uint8_t *) malloc(array_size);
-	// img2= (uint8_t *) malloc(array_size);
+	img2= (uint8_t *) malloc(array_size);
 	// img3= (uint8_t *) malloc(array_size);
 	//
 
@@ -163,17 +163,17 @@ void escravo(void) {
 			else{
 
 
-				// do_gaussian(img, img2, width, height);
-				// do_sobel(img2, img3, width, height);
+				// do_gaussian(img, img2, OFFSETX_SIZE, OFFSETY_SIZE);
+				// do_sobel(img2, img3, OFFSETX_SIZE, OFFSETY_SIZE);
 
 				// processa os dados recebidos
 				while(index < size){
 					printf("I am cpu: %d, index: %d, msg: %d, size: %d\n", hf_cpuid(), index, img[index], size);
-					img[index] = img[index];
+					img2[index] = img[index];
 					index++;
 				}
 
-				printf("Img size %d\n", size);
+				// printf("Img size %d\n", size);
 
 				// descobri as 2 da manha que se nao botar isso aqui
 				// ele responde pro mestre antes de o mestre enviar tudo pros escravos
@@ -181,8 +181,9 @@ void escravo(void) {
 				delay_ms(50);
 				// envia os dados alterados pro mestre
 				// val = hf_sendack(0, 1000, img3, size, 0, 3000);
-				val = hf_sendack(0, 1000, img, size, 0, 3000);
+				val = hf_sendack(0, 1000, img2, size, 0, 3000);
 				free(img);
+				free(img2);
 			}
 		}
 	}
@@ -273,7 +274,8 @@ void mestre(void) {
 						for(y=0; y< OFFSETY_SIZE; y++){
 							a = currx + x;
 							b = curry + y;
-							img[(a-1) * OFFSETX_SIZE + b] = output[output_i];
+							// img[(a-1) * OFFSETX_SIZE + b] = output[output_i];
+							img[a * OFFSETX_SIZE + b] = output[output_i];
 							output_i++;
 						}
 					}
@@ -300,16 +302,15 @@ void mestre(void) {
 				int32_t i,j, k = 0;
 				printf("\n\nint32_t width = %d, height = %d;\n", width, height);
 				printf("uint8_t image[] = {\n");
-				for (i = 0; i < height; i++){
-					for (j = 0; j < width; j++){
+				// for(i=0; i < width * height; i++) {
+				// 	printf("0x%x, ", img[i]);
+				// }
+				for (j = 0; j < width; j++){
+					for (i = 0; i < height; i++){
 						printf("0x%x", img[i * width + j]);
 						if ((i < height-1) || (j < width-1)) printf(", ");
 						if ((++k % 16) == 0) printf("\n");
 					}
-					printf("\n--------------\n ");
-					printf("end of height %d\n ", i);
-					printf("\n--------------\n ");
-
 				}
 				printf("};\n");
 
