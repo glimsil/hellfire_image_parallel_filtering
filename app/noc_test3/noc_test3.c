@@ -1,6 +1,6 @@
 #include <hellfire.h>
 #include <noc.h>
-#include "image_b.h"
+#include "image.h"
 
 int32_t CPU_N = 8;
 int32_t X_CHUNKS = 4;
@@ -218,17 +218,17 @@ void mestre(void) {
 		for(y=0; y < Y_CHUNKS; y++) {
 			for(x=0; x < X_CHUNKS; x++) {
 				// matrix, outputm, height, width, block line, block column, block height, block width
-				printf("x= %d, block line = %d, block width = %d\n", x, x*OFFSETX_SIZE, OFFSETX_SIZE);
-				printf("y= %d, block height = %d, block height = %d\n", y, y*OFFSETY_SIZE, OFFSETY_SIZE);
+				// printf("x= %d, block line = %d, block width = %d\n", x, x*OFFSETX_SIZE, OFFSETX_SIZE);
+				// printf("y= %d, block height = %d, block height = %d\n", y, y*OFFSETY_SIZE, OFFSETY_SIZE);
 				sub_matrix(image, output, height, width, y*OFFSETY_SIZE, x*OFFSETX_SIZE, OFFSETY_SIZE, OFFSETX_SIZE);
-
-				int32_t l = 0;
-				printf("--------cpu:%d\n", cpu_counter);
-				while(l < OFFSETX_SIZE * OFFSETY_SIZE) {
-					printf("%d ,", output[l]);
-					l++;
-				}
-				printf("\n");
+				//
+				// int32_t l = 0;
+				// printf("--------cpu:%d\n", cpu_counter);
+				// while(l < OFFSETX_SIZE * OFFSETY_SIZE) {
+				// 	printf("%d ,", output[l]);
+				// 	l++;
+				// }
+				// printf("\n");
 				val = hf_sendack(cpu_counter, 5000, output, OFFSETX_SIZE * OFFSETY_SIZE, hf_cpuid(), 500);
 				if (val){
 					printf("hf_sendack(): error %d\n", val);
@@ -272,30 +272,35 @@ void mestre(void) {
 					// 	offy ++;
 					// }
 					// offx = cpu - y;
-
-					printf("cpu: %d, OFFSETX: %d, OFFSETY: %d, offsetxsize: %d, offsetysize: %d, sizeof output:%d\n", cpu, offx, offy, OFFSETX_SIZE, OFFSETY_SIZE, size);
-					printf("offx = %d, offy = %d, sum = %d\n", offx * OFFSETX_SIZE, offy * OFFSETY_SIZE, (offx * OFFSETX_SIZE) + (offy * OFFSETY_SIZE));
+					//
+					// printf("cpu: %d, OFFSETX: %d, OFFSETY: %d, offsetxsize: %d, offsetysize: %d, sizeof output:%d\n", cpu, offx, offy, OFFSETX_SIZE, OFFSETY_SIZE, size);
+					// printf("offx = %d, offy = %d, sum = %d\n", offx * OFFSETX_SIZE, offy * OFFSETY_SIZE, (offx * OFFSETX_SIZE) + (offy * OFFSETY_SIZE));
 
 
 					// monta a matriz de volta
 					int32_t currx = offx * OFFSETX_SIZE;
 					int32_t curry = offy * OFFSETY_SIZE;
+					// printf("CURRX = %d\n", currx);
+					// printf("CURRY = %d\n", curry);
 					int32_t output_i = 0;
-					for(x=0; x< OFFSETX_SIZE; x++){
-						for(y=0; y< OFFSETY_SIZE; y++){
+					for(y=0; y< OFFSETY_SIZE; y++){
+						for(x=0; x< OFFSETX_SIZE; x++){
 							a = currx + x;
 							b = curry + y;
-							// img[(a-1) * OFFSETX_SIZE + b] = output[output_i];
-							img[a * OFFSETX_SIZE + b] = output[output_i];
+							// printf("pos = %d, ", a + (width * y) + (width * curry));
+							img[a + (width * y) + (width * curry)] = output[output_i];
+							// img[a * OFFSETX_SIZE + b] = output[output_i];
 							output_i++;
 						}
 					}
 					// printf("cpu %d size of img %d\n", cpu, sizeof(output));
 					// int32_t x = 0;
 					// while(x< size){
-					// 	img[x + (offset * (cpu_counter-1))] = output[x];
+					// 	printf("%d ,", output[x]);
+					// 	// img[x + (offset * (cpu_counter-1))] = output[x];
 					// 	x++;
 					// }
+					// printf("\n---------------------------------\n");
 					cpu_counter++;
 					// printf("cpu_counter = %d\n", cpu_counter);
 				}
@@ -313,16 +318,17 @@ void mestre(void) {
 				int32_t i,j, k = 0;
 				printf("\n\nint32_t width = %d, height = %d;\n", width, height);
 				printf("uint8_t image[] = {\n");
-				for(i=0; i < width * height; i++) {
-					printf("%d, ", img[i]);
-				}
-				// for (j = 0; j < width; j++){
-				// 	for (i = 0; i < height; i++){
-				// 		printf("0x%x", img[i * width + j]);
-				// 		if ((i < height-1) || (j < width-1)) printf(", ");
-				// 		if ((++k % 16) == 0) printf("\n");
-				// 	}
+				// for(i=0; i < width * height; i++) {
+				// 	printf("%d, ", img[i]);
 				// }
+				for (i = 0; i < height; i++){
+					for (j = 0; j < width; j++){
+						printf("0x%x", img[i * width + j]);
+						// printf("%d", img[i * width + j]);
+						if ((i < height-1) || (j < width-1)) printf(", ");
+						if ((++k % 16) == 0) printf("\n");
+					}
+				}
 				printf("};\n");
 
 				free(output);
