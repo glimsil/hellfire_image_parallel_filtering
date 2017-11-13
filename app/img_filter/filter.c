@@ -53,7 +53,7 @@ uint8_t sobel(uint8_t buffer[3][3]){
 			gy += ((int32_t)buffer[i][j] * (int32_t)kernely[i][j]);
 		}
 	}
-	
+
 	sum = isqrt(gy * gy + gx * gx);
 
 	if (sum > 255) sum = 255;
@@ -65,7 +65,7 @@ uint8_t sobel(uint8_t buffer[3][3]){
 void do_gaussian(uint8_t *input, uint8_t *output, int32_t width, int32_t height){
 	int32_t i = 0, j = 0, k, l;
 	uint8_t image_buf[5][5];
-	
+
 	for(i = 0; i < height; i++){
 		if (i > 1 && i < height-2){
 			for(j = 0; j < width; j++){
@@ -88,7 +88,7 @@ void do_gaussian(uint8_t *input, uint8_t *output, int32_t width, int32_t height)
 void do_sobel(uint8_t *input, uint8_t *output, int32_t width, int32_t height){
 	int32_t i = 0, j = 0, k, l;
 	uint8_t image_buf[3][3];
-	
+
 	for(i = 0; i < height; i++){
 		if (i > 2 && i < height-3){
 			for(j = 0; j < width-1; j++){
@@ -112,7 +112,7 @@ void task(void){
 	uint32_t i, j, k = 0;
 	uint8_t *img, *img2;
 	uint32_t time;
-	
+
 	while(1) {
 		img = (uint8_t *) malloc(height * width);
 		img2 = (uint8_t *) malloc(height * width);
@@ -149,124 +149,9 @@ void task(void){
 		printf("\n\nend of processing!\n");
 		panic(0);
 	}
-		
-}
 
-void send(int to)
-{
-	int32_t msg = 0;
-	int8_t buf[500];
-	int16_t val, channel;
-	
-	if (hf_comm_create(hf_selfid(), 1000, 0))
-		panic(0xff);
-		
-	delay_ms(50);
-	
-	// generate a unique channel number for this CPU
-	channel = hf_cpuid();
-	while (1){
-		sprintf(buf, "i am cpu %d, thread %d, channel %d: msg %d size: %d\n", hf_cpuid(), hf_selfid(), channel, msg++, sizeof(buf));
-		val = hf_sendack(2, 5000, buf, sizeof(buf), channel, 500);
-		if (val)
-			printf("hf_sendack(): error %d\n", val);
-		delay_ms(50);
-	}
-}
-
-void receive(void)
-{
-	int8_t buf[1500];
-	uint16_t cpu, task, size;
-	int16_t val;
-	int32_t i;
-	
-	if (hf_comm_create(hf_selfid(), 5000, 0))
-		panic(0xff);
-	
-	while (1){
-		i = hf_recvprobe();
-		if (i >= 0) {
-			val = hf_recvack(&cpu, &task, buf, &size, i);
-			if (val)
-				printf("hf_recvack(): error %d\n", val);
-			else
-				printf("%s", buf);
-		}
-	}
-}
-
-void king(void)
-{
-    int32_t msg = 0;
-	int8_t buf[500];
-	int16_t val, channel;
-    uint16_t cpu, task, size;
-	int32_t i;
-	if (hf_comm_create(hf_selfid(), 1000, 0))
-		panic(0xff);
-		
-	delay_ms(50);
-    // generate a unique channel number for this CPU
-	channel = hf_cpuid();
-
-    // sending to slaves
-    for(i = 1; i < 5; i++){
-        sprintf(buf, "I am the KING (cpu %d), thread %d, channel %d: sending to: %d size: %d\n", hf_cpuid(), hf_selfid(), channel, i, sizeof(buf));
-		val = hf_sendack(i, 5000, buf, sizeof(buf), channel, 500);
-		if (val)
-			printf("hf_sendack(): error %d\n", val);
-		delay_ms(10);
-    }
-    i=-1;
-    // getting slaves responses
-    while (1){
-		i = hf_recvprobe();
-		if (i >= 0) {
-			val = hf_recvack(&cpu, &task, buf, &size, i);
-			if (val)
-				printf("hf_recvack(): error %d\n", val);
-			else
-				printf("%s", buf);
-		}
-	}
-}
-
-void slave(void)
-{
-    int8_t buf[500];
-    int8_t response[500];
-	uint16_t cpu, task, size;
-	int16_t val;
-	int32_t i;
-	
-	if (hf_comm_create(hf_selfid(), 5000, 0))
-		panic(0xff);
-	
-	while (1){
-		i = hf_recvprobe();
-		if (i >= 0) {
-			val = hf_recvack(&cpu, &task, buf, &size, i);
-			if (val) {
-				printf("hf_recvack(): error %d\n", val);
-            } else{
-				printf("%s", buf);
-                sprintf(response, "SUCCESS in cpu %d, thread %d \n", hf_cpuid(), hf_selfid());
-                val = hf_sendack(0, 5000, response, sizeof(response), channel, 500);
-		        if (val)
-			        printf("hf_sendack(): error %d\n", val);
-                
-            }
-            break;
-		}
-	}
 }
 
 void app_main(void) {
-    if (hf_cpuid() == 0){
-		hf_spawn(king, 0, 0, 0, "king", 4096);
-	}else{
-		hf_spawn(slave, 0, 0, 0, "slave", 4096);
-	}
-	//hf_spawn(task, 0, 0, 0, "filter", 2048);
+	hf_spawn(task, 0, 0, 0, "filter", 2048);
 }

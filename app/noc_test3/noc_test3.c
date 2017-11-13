@@ -82,11 +82,11 @@ void do_gaussian(uint8_t *input, uint8_t *output, int32_t width, int32_t height)
 
 					output[((i * width) + j)] = gaussian(image_buf);
 				}else{
-					output[((i * width) + j)] = input[((i * width) + j)];
+					output[((i * width) + j)] = 0;
 				}
 			}
 		}else{
-			output[((i * width) + j)] = input[((i * width) + j)];
+			output[((i * width) + j)] = 0;
 		}
 	}
 }
@@ -105,11 +105,13 @@ void do_sobel(uint8_t *input, uint8_t *output, int32_t width, int32_t height){
 
 					output[((i * width) + j)] = sobel(image_buf);
 				}else{
-					output[((i * width) + j)] = 0;
+					output[((i * width) + j)] = input[((i * width) + j)];
+					// output[((i * width) + j)] = 0;
 				}
 			}
 		}else{
-			output[((i * width) + j)] = 0;
+			// output[((i * width) + j)] = 0;
+			output[((i * width) + j)] = input[((i * width) + j)];
 		}
 	}
 }
@@ -130,6 +132,16 @@ void sub_matrix(uint8_t *input, uint8_t *output, int32_t h, int32_t w, int32_t k
 	}
 }
 
+void print_m(uint8_t *m, uint8_t w, uint8_t h) {
+	int32_t x, y, k=0;
+	for(y=0; y<h; y++){
+		for(x=0; x<w; x++){
+			printf("%d, ", m[y * w + x]);
+		}
+		printf("\n");
+	}
+}
+
 void escravo(void) {
 	int32_t i;
 	int16_t val;
@@ -143,13 +155,23 @@ void escravo(void) {
 
 	int32_t OFFSETX_SIZE=width/X_CHUNKS;
 	int32_t OFFSETY_SIZE=height/Y_CHUNKS;
+
+	int32_t padding = 4;
+	int32_t off_padding = 2;
+
+
+	int32_t _OFFSETX_SIZE=OFFSETX_SIZE + padding;
+	int32_t _OFFSETY_SIZE=OFFSETY_SIZE + padding;
+
 	int32_t array_size = OFFSETX_SIZE * OFFSETY_SIZE;
+	int32_t _array_size = (_OFFSETX_SIZE) * (_OFFSETY_SIZE);
 	// uint8_t img[array_size];
-	uint8_t *img, *img2, *img3;
+	uint8_t *img, *img2, *img3, *img4;
 	// uint8_t *img;
 	img = (uint8_t *) malloc(array_size);
-	img2= (uint8_t *) malloc(array_size);
-	// img3= (uint8_t *) malloc(array_size);
+	img2= (uint8_t *) malloc(_array_size);
+	img3= (uint8_t *) malloc(_array_size);
+	img4= (uint8_t *) malloc(_array_size);
 	//
 
 	while(1) {
@@ -162,18 +184,39 @@ void escravo(void) {
 				printf("hf_recvack(): error %d\n", val);
 			else{
 
+				// print_m(img, OFFSETX_SIZE, OFFSETY_SIZE);
 
-				// do_gaussian(img, img2, OFFSETX_SIZE, OFFSETY_SIZE);
-				// do_sobel(img2, img3, OFFSETX_SIZE, OFFSETY_SIZE);
+				// printf("-------------\n");
+				// printf("sizex: %d, sizey: %d\n", _OFFSETX_SIZE, _OFFSETY_SIZE);
+				//add_padding
+				int32_t x, y, k=0;
+				for(y=0; y<_OFFSETY_SIZE; y++){
+					for(x=0; x<_OFFSETX_SIZE; x++){
+						// printf("x: %d, y: %d\n", x, y);
 
-				// processa os dados recebidos
-				while(index < size){
-					printf("I am cpu: %d, index: %d, msg: %d, size: %d\n", hf_cpuid(), index, img[index], size);
-					img2[index] = img[index];
-					index++;
+						// if(x < 2 || y < 2){
+						if(x < off_padding || y < off_padding || (x+off_padding) >= _OFFSETX_SIZE || (y+off_padding) >= _OFFSETY_SIZE){
+							img2[y * _OFFSETX_SIZE + x] = 0xff;
+						}else {
+							// printf("VTNC%d,",img[k]);
+							img2[y * _OFFSETX_SIZE + x] = img[k];
+							k++;
+						}
+					}
 				}
 
-				// printf("Img size %d\n", size);
+				// print_m(img2, _OFFSETX_SIZE, _OFFSETY_SIZE);
+
+				do_gaussian(img2, img3, _OFFSETX_SIZE, _OFFSETY_SIZE);
+				do_sobel(img3, img4, _OFFSETX_SIZE, _OFFSETY_SIZE);
+
+
+				// input, output, height, width, block line, block column, block height, block width
+				sub_matrix(img4, img, _OFFSETY_SIZE, _OFFSETX_SIZE, off_padding, off_padding, OFFSETY_SIZE, OFFSETX_SIZE);
+
+
+				// print_m(img, OFFSETX_SIZE, OFFSETY_SIZE);
+
 
 				// descobri as 2 da manha que se nao botar isso aqui
 				// ele responde pro mestre antes de o mestre enviar tudo pros escravos
@@ -181,9 +224,11 @@ void escravo(void) {
 				delay_ms(50);
 				// envia os dados alterados pro mestre
 				// val = hf_sendack(0, 1000, img3, size, 0, 3000);
-				val = hf_sendack(0, 1000, img2, size, 0, 3000);
-				free(img);
+				val = hf_sendack(0, 1000, img, size, 0, 3000);
+				// free(img);
 				free(img2);
+				free(img3);
+				free(img4);
 			}
 		}
 	}
@@ -196,6 +241,7 @@ void mestre(void) {
 	//uint32_t time;
 	uint16_t cpu, port, size, i;
 	int16_t val;
+	int32_t time;
 
 	if (hf_comm_create(hf_selfid(), 1000, 0)){
 		panic(0xff);
@@ -212,6 +258,8 @@ void mestre(void) {
 
 	// recebe a resposta
 	while (1){
+
+		time = _readcounter();
 		// comeca no 1 pq 0 eh o mestre
 		int32_t x, y = 0;
 		int32_t cpu_counter=1;
@@ -315,6 +363,9 @@ void mestre(void) {
 				// 	printf("index: %d, msg: %d\n", index, img[index]);
 				// 	index++;
 				// }
+				time = _readcounter() - time;
+				printf("done in %d clock cycles.\n\n", time);
+
 				int32_t i,j, k = 0;
 				printf("\n\nint32_t width = %d, height = %d;\n", width, height);
 				printf("uint8_t image[] = {\n");
