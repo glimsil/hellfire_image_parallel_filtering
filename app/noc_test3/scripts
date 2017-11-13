@@ -1,0 +1,9 @@
+compilar
+
+make clean; make images;  yes | mv !(makefile) ~/Downloads/hellfire_image_parallel_filtering/usr/sioc_sim/objects/
+
+
+rodar
+cd ~/Downloads/hellfire_image_parallel_filtering/usr/sim/mpsoc_sim
+./mpsoc_sim 1 s
+
